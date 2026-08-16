@@ -72,6 +72,8 @@ src/fermion_garden/       可安装的零网络核心
 skills/ctx-key/           给 Agent 使用的 Skill 契约
 examples/                 固定输入、离线演示与期望输出
 tests/                    标准库单元测试
+evidence/round118/        第 118 轮冻结判词：Z 轴三臂打平（装置故障 G1 留账后沿用原表落格）
+evidence/round119/        第 119 轮冻结判词：预检闸毙注（题面泄漏答案，46/46）
 evidence/round120/        精选机械验证器、自造题、冻结判词与正式负结果（三臂打平）
 evidence/round121/        第 121 轮冻结判词与分出结果（禁令式渲染）
 evidence/early-experiments/  早期可恢复驱逐佐证（脱敏摘录）
@@ -90,7 +92,7 @@ docs/                     方法、限制、公开边界与来源说明
 
 当前 API 是从两类已运行实验整理出的最小产品边界：早期“位置受压、可逆移出、任务变化后回填”的流式装置，以及第 120 轮“最近历史／全量或压缩／动态选择”的修虫对照实验。整理后的离线词面基线是新接口，不把它冒充成第 120 轮原样代码或已验证收益。
 
-第 120 轮（三臂打平的负结果）与第 121 轮（分出：禁令式渲染重踩更少）的冻结落点和正式结果位于 [evidence/round120](evidence/round120) 与 [evidence/round121](evidence/round121)。这些目录不包含模型 transcript、API 凭证、私人会话或全量实验历史。
+第 118–121 轮的冻结落点与正式结果位于 [evidence/round118](evidence/round118)–[evidence/round121](evidence/round121)：一轮预检闸毙注（119）、两轮打平（118、120）、一轮分出（121）。自第 122 轮起，「见数前冻结」以公开提交时间戳外部化，流程见 [docs/preregistration.md](docs/preregistration.md)。这些目录不包含模型 transcript、API 凭证、私人会话或全量实验历史。
 
 ## License
 

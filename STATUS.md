@@ -1,6 +1,6 @@
 # Status
 
-数据截点：2026-08-16，第 120 与 121 轮均已正式落格并精选入库；第 122 轮在途，未进入本副本。
+数据截点：2026-08-16，第 118–121 轮均已正式落格并精选入库（118 打平、119 预检闸毙注、120 打平、121 分出）；第 122 轮在途，未进入本副本。自第 122 轮起冻结时序外部化到本仓提交历史，见 `docs/preregistration.md`。初赛提交时点为 37 个跟踪文件，此后提交均为维护与证据补全。
 
 | 能力 | 状态 | 可核位置 |
 |---|---|---|
@@ -9,7 +9,7 @@
 | 判词、版本、`trace_id` 审计 | 已实现 | `src/fermion_garden/ledger.py` |
 | 零网络演示 | 已实现 | `examples/offline_demo.py` |
 | Skill 使用契约 | 已实现初版 | `skills/ctx-key/SKILL.md` |
-| 第 120／121 轮机械验证证据 | 已精选 | `evidence/round120/`、`evidence/round121/` |
+| 第 118–121 轮机械验证证据 | 已精选 | `evidence/round118/`–`evidence/round121/` |
 | 早期可恢复驱逐证据（18/18 vs 11/18）与两次撤回摘录 | 已精选、脱敏 | `evidence/early-experiments/reversible-eviction.md` |
 | AgentTeams 适配器 | 未实现 | 不在仓库中 |
 | 三职能 Agent 运行闭环 | 未实现 | 只有设计，不冒充代码 |
