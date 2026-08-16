@@ -10,6 +10,7 @@
 | 零网络演示 | 已实现 | `examples/offline_demo.py` |
 | Skill 使用契约 | 已实现初版 | `skills/ctx-key/SKILL.md` |
 | 第 118–121 轮机械验证证据 | 已精选 | `evidence/round118/`–`evidence/round121/` |
+| 第 122 轮（死路记录写法三臂：尺/画/禁） | 已预注册，冻结表已推送，跑数未开始 | `evidence/round122/` |
 | 早期可恢复驱逐证据（18/18 vs 11/18）与两次撤回摘录 | 已精选、脱敏 | `evidence/early-experiments/reversible-eviction.md` |
 | AgentTeams 适配器 | 未实现 | 不在仓库中 |
 | 三职能 Agent 运行闭环 | 未实现 | 只有设计，不冒充代码 |
