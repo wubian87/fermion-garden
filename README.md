@@ -1,0 +1,90 @@
+# 费米子乐园 / Fermion Garden
+
+> Research preview: an auditable, reversible context selector for multi-agent handoffs.
+
+多 Agent 共用的上下文会持续增长。费米子乐园把“下一位 Agent 这一步该读什么”做成三个显式操作：`select` 选择、`compact` 可逆移出、`recall` 按新证据召回。每次决定都留下理由、版本与 `trace_id`。
+
+## 当前状态
+
+这是从私人实验母库白名单提取的初赛代码候选，不是完成品。
+
+- **已实现**：零网络词面基线；`select / compact / recall`；可恢复账本；审计记录；离线演示；单元测试；第 120 轮机械证据快照。
+- **尚未实现**：AgentTeams 适配器、真实的 `investigator / fixer / verifier` 三 Agent 运行闭环、嵌入 provider、生产沙箱。
+- **尚未证明**：上下文选择能提升任务成功率。第 120 轮正式结果是三种读法打平，选择臂的重复踩坑反而更多。
+
+这个边界是仓库契约的一部分。请同时阅读 [STATUS.md](STATUS.md)、[EVIDENCE.md](EVIDENCE.md) 与 [docs/limitations.md](docs/limitations.md)。
+
+## 30 秒运行
+
+只需要 Python 3.11+，默认不联网、不读环境变量：
+
+```bash
+python3 examples/offline_demo.py
+python3 -m unittest discover -s tests -v
+```
+
+也可以安装为本地包：
+
+```bash
+python3 -m pip install -e .
+fermion-garden-demo
+```
+
+演示会输出四类可核字段：初次选择、位置受压后的在位／移出项、任务变化后召回项，以及完整审计账。
+
+## 核心接口
+
+```python
+from fermion_garden import ContextItem, CtxKey
+
+garden = CtxKey([
+    ContextItem(id="error", text="timezone boundary test fails"),
+    ContextItem(id="old", text="unrelated retired hypothesis"),
+])
+
+bundle = garden.select(
+    task_state="repair the timezone boundary",
+    target_role="fixer",
+    budget=1,
+)
+
+garden.compact(
+    task_state="repair the timezone boundary",
+    target_role="fixer",
+    budget=1,
+)
+
+recalled = garden.recall("validation says timezone boundary returns wrong value", budget=1)
+```
+
+`budget` 在 v0.1 中表示最多条目数，不假装是精确 token 预算。所有被移出项进入可恢复区，不做永久删除。
+
+## 仓库地图
+
+```text
+src/fermion_garden/       可安装的零网络核心
+skills/ctx-key/           给 Agent 使用的 Skill 契约
+examples/                 固定输入、离线演示与期望输出
+tests/                    标准库单元测试
+evidence/round120/        精选机械验证器、冻结判词与正式负结果
+evidence/early-experiments/  早期可恢复驱逐佐证（脱敏摘录）
+docs/                     方法、限制、公开边界与来源说明
+```
+
+## 设计纪律
+
+1. 上下文更短不是成功；任务结果不降或变好才是成功。
+2. 判据缺失、分数无区分力或必要项超过预算时，宁可不擦并报告冲突。
+3. `compact` 只改变在位状态，不能永久删除候选内容。
+4. `recall` 必须留下触发理由；任务变化与验证失败都可以触发。
+5. 修复者不能给自己的补丁发合格证。真正的三 Agent 闭环仍待 AgentTeams 接入。
+
+## 来源与证据
+
+当前 API 是从两类已运行实验整理出的最小产品边界：早期“位置受压、可逆移出、任务变化后回填”的流式装置，以及第 120 轮“最近历史／全量或压缩／动态选择”的修虫对照实验。整理后的离线词面基线是新接口，不把它冒充成第 120 轮原样代码或已验证收益。
+
+第 120 轮的冻结落点和正式结果位于 [evidence/round120](evidence/round120)。该目录不包含模型 transcript、API 凭证、私人会话或全量实验历史。
+
+## License
+
+MIT。实验数据与外部材料不因代码许可证自动获得再发布权；本仓库只保留自造题与精选结果。

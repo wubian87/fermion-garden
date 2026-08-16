@@ -1,0 +1,4 @@
+interface:
+  display_name: "ctx-key"
+  short_description: "为多 Agent 交接提供可审计、可逆的上下文选择与召回"
+  default_prompt: "Use $ctx-key to assemble an auditable context bundle for the next agent handoff."
