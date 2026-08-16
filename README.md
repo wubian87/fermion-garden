@@ -2,6 +2,8 @@
 
 > Research preview: an auditable, reversible context selector for multi-agent handoffs.
 
+本项目在 GOAI Agent Infra 赛道初赛的参赛名为「**费米子乐园.八爪鱼**」：费米子乐园＝共享上下文环境与 `ctx-key` Skill；八爪鱼＝住在其中、完成软件修复任务的三职能 Agent 团队（诊断／修复／验证，设计阶段，AgentTeams 接入未完成）。
+
 多 Agent 共用的上下文会持续增长。费米子乐园把“下一位 Agent 这一步该读什么”做成三个显式操作：`select` 选择、`compact` 可逆移出、`recall` 按新证据召回。每次决定都留下理由、版本与 `trace_id`。
 
 ## 当前状态
