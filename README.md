@@ -2,7 +2,7 @@
 
 > Research preview: an auditable, reversible context selector for multi-agent handoffs.
 
-**GOAI Agent Infra 初赛仓库。** 参赛名「**费米子乐园.八爪鱼**」：费米子乐园＝共享上下文环境与 `ctx-key` Skill；八爪鱼＝住在其中、完成软件修复任务的三职能 Agent 团队（诊断／修复／验证，设计阶段，AgentTeams 接入未完成）。
+**GOAI Agent Infra 初赛仓库。** 参赛名「**费米子乐园·八爪鱼**」：费米子乐园＝共享上下文环境与 `ctx-key` Skill；八爪鱼＝住在其中、完成软件修复任务的三职能 Agent 团队（诊断／修复／验证，设计阶段，AgentTeams 接入未完成）。
 
 参赛主体：重庆伴月之星网络科技有限公司 · [byzx.xyz](https://byzx.xyz)。评委请以本仓库、方案文档和 500 字简介为准；官网是公司主页，不是本赛的运行证据。
 
