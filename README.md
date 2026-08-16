@@ -29,11 +29,11 @@ python3 examples/offline_demo.py
 python3 -m unittest discover -s tests -v
 ```
 
-也可以安装为本地包：
+也可以安装为本地包（Debian／Ubuntu 系请用虚拟环境，系统 Python 有 PEP 668 保护）：
 
 ```bash
-python3 -m pip install -e .
-fermion-garden-demo
+python3 -m venv .venv && .venv/bin/python -m pip install -e .
+.venv/bin/fermion-garden-demo
 ```
 
 演示会输出四类可核字段：初次选择、位置受压后的在位／移出项、任务变化后召回项，以及完整审计账。
