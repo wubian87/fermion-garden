@@ -9,7 +9,7 @@ description = "Auditable and reversible context selection for multi-agent handof
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}
-authors = [{name = "xin"}]
+authors = [{name = "伴月之星"}]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "License :: OSI Approved :: MIT License",
