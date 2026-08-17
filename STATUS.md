@@ -11,7 +11,7 @@
 | Skill 使用契约 | 已实现初版 | `skills/ctx-key/SKILL.md` |
 | 第 118–122 轮机械验证证据 | 已精选 | `evidence/round118/`–`evidence/round122/` |
 | 第 122 轮（死路记录写法三臂：尺/画/禁） | 已落格：M3·命令式不可替（两开格对皆分出·边界），脱敏逐棒账已公开 | `evidence/round122/` |
-| 第 123 轮（σ 厚度×判定时刻拆开：双臂 10 vs 31） | 已预注册，冻结表已推送，跑数未开始 | `evidence/round123/` |
+| 第 123 轮（σ 厚度×判定时刻拆开：双臂 10 vs 31） | 已落格：M4 零机会打平＋σ31 S2＋σ10 技术性不完备（σ 薄的代价＝早窗换 y 遇模型拒绝） | `evidence/round123/` |
 | 早期可恢复驱逐证据（18/18 vs 11/18）与两次撤回摘录 | 已精选、脱敏 | `evidence/early-experiments/reversible-eviction.md` |
 | AgentTeams 适配器 | 未实现 | 不在仓库中 |
 | 三职能 Agent 运行闭环 | 未实现 | 只有设计，不冒充代码 |
