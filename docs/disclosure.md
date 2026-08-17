@@ -23,9 +23,9 @@
 
 **商业 API 与闭源模型清单（分两层，⛔ 不用「只报本赛」盖过历史）**
 
-**A 层 · 本赛结论所依赖的实验（第 118–121 轮，逐实验目录复核）**
+**A 层 · 本赛结论所依赖的实验（第 118–122 轮，逐实验目录复核）**
 
-- **DeepSeek-V4-Flash** — 火山方舟 Agent Plan（`ark.cn-beijing.volces.com/api/plan`，商业套餐）；第 118–121 轮全部主跑（第 120 轮全链合计约 1830 万 output tokens）。
+- **DeepSeek-V4-Flash** — 火山方舟 Agent Plan（`ark.cn-beijing.volces.com/api/plan`，商业套餐）；第 118–122 轮全部主跑（第 120 轮全链约 1830 万、第 122 轮全链约 1504 万 output tokens；122 轮全部账条的模型字段核过，仅此一家）。
 - **DeepSeek-V4-Pro** — 同平台，仅早期小批难度探针。
 - **BAAI/bge-m3** — 硅基流动（`api.siliconflow.cn/v1/embeddings`，商业 API），判据选读的相似度尺，结果带本地缓存。
 
