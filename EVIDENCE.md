@@ -6,6 +6,7 @@
 | 上下文受压时可逆移出 | `CtxKey.compact`、`test_compact_is_reversible` | v0.1 预算是条目数；不等于生产 token 管理 | 被移出项丢失、无法按账恢复 |
 | 任务变化后能召回相关旧项 | `CtxKey.recall`、离线演示 | 只量机制，不证明召回能提高真实任务成功率 | 新触发与被召回项无关，或召回不能恢复状态 |
 | 决定可追踪 | `DecisionLedger`、离线演示（确定性选择＋运行时审计时间戳） | 当前是进程内 JSONL；尚无跨 Agent 分布式 Trace | 事件缺来源、理由、版本或 `trace_id` |
+| 单进程 handoff 的两端可归因 | `AgentRegistry`、`CtxKey.dump/load`、`examples/handoff_demo.py`、`test_handoff_carries_both_agents_and_receiver_sets_its_own_acting_agent_l141` | 9 位号是引用而非认证；dump 在内存传递，不是消息总线，也没有 AgentTeams | load 自动恢复 `acting_agent` 造成冒充，或接手后账行不能区分两端 |
 | 擦除可恢复、且比永久删除保得住 | `CtxKey.compact/recall`、`evidence/early-experiments/reversible-eviction.md`（母库第 7 轮：任务回切后 18/18 vs 11/18） | 一份材料、一个判据序列；可召回压缩并非本项目独家 | 被移出项丢失、无法按账恢复 |
 | 私人实验留下冻结判词与机械判卷代码 | `evidence/round120/frozen-decision-table.md`、`controlled_validator.py` | 同目录 SHA 只能验内容一致，不能独立证明时间先后；历史验证器只比较两遍总分，见 `evidence/round120/KNOWN_ISSUES.md` | 冻结 SHA 不一致，或结果无法由相同判词解释 |
 | 动态选读已证明更有效 | **不成立** | 第 120 轮正式判词为三臂打平，且选择臂重踩更多 | 只有新实验跨过事前门槛后才能改变状态 |
@@ -14,6 +15,7 @@
 | 死路记录写成禁令，比写成中性描述重踩更少 | `evidence/round121/`（冻结表＋判词） | 单题、单模型、单渲染对；禁臂无自己的重跑，`0.55` 是单样本；非法率差 7 对 4 作敏感性注记（R_法：描 0.69 对禁 0.50，方向不翻） | 描臂重跑或换题／模型／渲染写法后方向翻转 |
 | 三形死路记录中禁令式防重踩最强（尺【判线】／画【预告】皆输禁 ⛔【禁走】） | `evidence/round122/`（冻结表＋判词＋脱敏逐棒账） | 单题、单模型、单渲染对；两开格对均边界格（\|Δ\|−E ≤ 0.05）；R 口径与 121 有两处委托裁量之别（非法棒不计分子、复活不清除），跨轮不拼数 | 尺或画重跑、或换题／模型／渲染写法后方向翻转 |
 | 已完成 AgentTeams 三 Agent 产品 | **不成立** | 本仓库没有该适配器 | 需要真实可运行的 AgentTeams 代码、Trace 与失败返工证据 |
+| 上下文选择已提高任务成功率 | **不成立** | 身份与 handoff 示例只验证归因链；第 120 轮仍为三臂打平 | 需要事前冻结、带真实任务结果的对照跨过门槛 |
 
 ## 第 120 轮正式结果
 

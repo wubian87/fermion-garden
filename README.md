@@ -10,12 +10,14 @@
 
 多 Agent 共用的上下文会持续增长。费米子乐园把“下一位 Agent 这一步该读什么”做成三个显式操作：`select` 选择、`compact` 可逆移出、`recall` 按新证据召回。每次决定都留下理由、版本与 `trace_id`。
 
+L14.1 还加入了单进程的 `AgentRegistry`：给参与者发 9 位号，让账行带 `agent_ref`，并在 `dump(to_agent=...)` 中记录一次 handoff 的两端。它是可审计的身份归因，不是权限系统、消息总线或 Agent 调度器；接手方 `load` 后必须自己设置 `acting_agent`，旧钥匙不会替它冒充身份。
+
 ## 当前状态
 
 这是从私人实验母库白名单提取的初赛代码候选，不是完成品。
 
-- **已实现**：零网络词面基线；`select / compact / recall`；可恢复账本；审计记录；离线演示；单元测试；第 120–122 轮机械证据快照。
-- **尚未实现**：AgentTeams 适配器、真实的 `investigator / fixer / verifier` 三 Agent 运行闭环、嵌入 provider、生产沙箱。
+- **已实现**：零网络词面基线；`select / compact / recall`；可恢复账本；单进程参与者身份、账行归因与 handoff 审计；两个离线演示；单元测试；第 120–122 轮机械证据快照。
+- **尚未实现**：AgentTeams 适配器、消息总线、分布式 Trace、真实的 `investigator / fixer / verifier` 三 Agent 运行闭环、嵌入 provider、生产沙箱。
 - **尚未证明**：上下文选择能提升任务成功率。第 120 轮正式结果是三种读法打平，选择臂的重复踩坑反而更多。第 121 轮在同一题上分出：死路记录写成禁令比写成中性描述重踩更少（R 0.55 对 0.65；Z 双 0.90 打平）——量的是记录写法的效应，不是任务成功率。第 122 轮三臂（判线／预告／禁令）再分出·边界：禁令式重踩最少（R 中位 0.35 对 0.55／0.60，M3·命令式不可替）——仍是记录写法的效应，不是任务成功率。
 
 这个边界是仓库契约的一部分。请同时阅读 [STATUS.md](STATUS.md)、[EVIDENCE.md](EVIDENCE.md) 与 [docs/limitations.md](docs/limitations.md)。
@@ -26,6 +28,7 @@
 
 ```bash
 python3 examples/offline_demo.py
+python3 examples/handoff_demo.py
 python3 -m unittest discover -s tests -v
 ```
 
@@ -36,7 +39,7 @@ python3 -m venv .venv && .venv/bin/python -m pip install -e .
 .venv/bin/fermion-garden-demo
 ```
 
-演示会输出四类可核字段：初次选择、位置受压后的在位／移出项、任务变化后召回项，以及完整审计账。
+`offline_demo.py` 输出初次选择、受压后的在位／移出项、任务变化后召回项与完整审计账。`handoff_demo.py` 则让两名 registry 身份在内存中交出／接收同一个 dump，展示接手前身份为空、接手方自行认领，以及两端 `agent_ref` 账数。后者不启动两个 Agent 进程，也不模拟 AgentTeams。
 
 ## 核心接口
 
@@ -65,12 +68,28 @@ recalled = garden.recall("validation says timezone boundary returns wrong value"
 
 `budget` 在 v0.1 中表示最多条目数，不假装是精确 token 预算。所有被移出项进入可恢复区，不做永久删除。
 
+最小身份交接：
+
+```python
+sender = CtxKey()
+investigator = sender.agent_registry.register("investigator")
+fixer = sender.agent_registry.register("fixer")
+sender.acting_agent = investigator
+
+dumped = sender.dump(to_agent=fixer)
+receiver = CtxKey.load(dumped)
+assert receiver.acting_agent is None
+receiver.acting_agent = fixer
+```
+
+完整可跑版本见 [`examples/handoff_demo.py`](examples/handoff_demo.py)。9 位号只做稳定引用，不编码角色或权限，也不防冒充。
+
 ## 仓库地图
 
 ```text
 src/fermion_garden/       可安装的零网络核心
 skills/ctx-key/           给 Agent 使用的 Skill 契约
-examples/                 固定输入、离线演示与期望输出
+examples/                 固定输入的机制演示与两身份离线交接
 tests/                    标准库单元测试
 evidence/round118/        第 118 轮冻结判词：Z 轴三臂打平（装置故障 G1 留账后沿用原表落格）
 evidence/round119/        第 119 轮冻结判词：预检闸毙注（题面泄漏答案，46/46）
@@ -87,7 +106,7 @@ docs/                     方法、限制、公开边界与来源说明
 2. 判据缺失、分数无区分力或必要项超过预算时，宁可不擦并报告冲突。
 3. `compact` 只改变在位状态，不能永久删除候选内容。
 4. `recall` 必须留下触发理由；任务变化与验证失败都可以触发。
-5. 修复者不能给自己的补丁发合格证。真正的三 Agent 闭环仍待 AgentTeams 接入。
+5. 修复者不能给自己的补丁发合格证。身份归因只让账回答“是谁”，不回答“该谁”；真正的三 Agent 闭环仍待 AgentTeams 接入。
 
 ## 来源与证据
 
