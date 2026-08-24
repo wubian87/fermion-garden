@@ -11,7 +11,7 @@ Use the installed `fermion_garden` package to select, compact and recall shared 
 
 1. State the current task and the receiving role explicitly.
 2. Turn candidate material into `ContextItem` records with stable ids and sources.
-3. Pin non-negotiable constraints and pass any additional required ids.
+3. Pin non-negotiable constraints and pass any additional required ids. For versioned working state (code, configs), call `pin_latest(source)` after each `record` so the newest version stays in the active set and older versions release their pin.
 4. Call `select` before a handoff. Give the receiver only the selected bundle plus references to the source store.
 5. Call `compact` only under a real position or budget constraint. Preserve every evicted item in the recoverable store.
 6. Call `recall` when the task criterion changes, verification fails, or a user explicitly asks to revisit old evidence.

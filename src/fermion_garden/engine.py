@@ -90,6 +90,41 @@ class CtxKey:
     def acting_agent(self, agent: str | None) -> None:
         self._agent = self._validated_agent(agent)
 
+    def pin_latest(self, source: str, *, trace_id: str | None = None) -> str | None:
+        """L17 工程态保护：pin 指定 source 的最新条目（created_at 最大，平局取 id 字典序最大）、
+        同源旧版解除 pin。pinned 条目在 compact 时进 mandatory 集（既有语义），挤不出活动区。
+        frozen 条目以 dataclasses.replace 换新对象（active 与 recoverable 两池都扫；
+        OrderedDict 对已有 key 赋值不改变顺序）。返回被 pin 的条目 id；该 source 无条目
+        返回 None 且不写账。
+        来路：L15 逐轮取证（代码条目被挤出 ⟺ 工程态蒸发，4/4 相关）＋ L16 三臂预注册验证
+        （pin 最新代码后三钥完备 35/36、主观追平直推、供给保持 36%）——本方法把该
+        用法层策略固化成引擎能力；缺省不调用时行为与本方法加入前逐字节一致。"""
+        import dataclasses
+
+        matches: list[tuple[str, ContextItem]] = [
+            (item_id, item) for item_id, item in {**self._recoverable, **self._active}.items()
+            if item.source == source
+        ]
+        if not matches:
+            return None
+        latest_id, latest = max(matches, key=lambda pair: (pair[1].created_at, pair[0]))
+        for pool in (self._active, self._recoverable):
+            for item_id, item in pool.items():
+                if item.source == source and item.pinned != (item_id == latest_id):
+                    pool[item_id] = dataclasses.replace(item, pinned=(item_id == latest_id))
+        self.ledger.append(
+            operation="protect",
+            trace_id=trace_id or self._trace_id(),
+            context_version=self._version,
+            decisions=[Decision(latest_id, "pin", 0.0, f"keep latest of source={source}")],
+            criterion=f"pin_latest source={source}",
+            target_role="system",
+            budget=None,
+            candidate_items=[latest],
+            agent_ref=self._agent,  # L14.1：这一步是哪个存在干的（None＝未归因，旧口径）
+        )
+        return latest_id
+
     def record(self, items: Iterable[ContextItem], *, reason: str = "new evidence") -> tuple[str, ...]:
         item_list = list(items)
         if not reason.strip():

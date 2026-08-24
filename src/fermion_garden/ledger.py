@@ -13,8 +13,9 @@ from typing import Any, Iterable
 # 直接 ledger.append 落账（engine.py record 路径），不经 ContextBundle ⟹ models.py:44 的
 # Literal 三值（select/compact/recall）漏 record——照它写 ⟹ 恢复任何含 record 行的旧账
 # 在读写两侧闸下逐行 ValueError。scan 是 L12.2 §B 新动作的落账值（§2.5 园主落刀）。
+# protect 是 L17 pin_latest 的落账值（工程态保护；纯增量：旧五个值一行未动）。
 LEDGER_OPERATIONS: frozenset[str] = frozenset(
-    {"record", "select", "compact", "recall", "scan"}
+    {"record", "select", "compact", "recall", "scan", "protect"}
 )
 
 
