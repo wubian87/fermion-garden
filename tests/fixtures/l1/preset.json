@@ -1,0 +1,54 @@
+{
+  "meta": {
+    "run": "l1-run001",
+    "frozen_at": "2026-08-19",
+    "note": "机器读真源；与 预设.md 同 freeze，sha256 见 preset.sha256"
+  },
+  "record_reason": "initial context",
+  "compact": {
+    "task_state": "执行数据库迁移前的检查与回滚准备",
+    "target_role": "executor",
+    "budget": 4,
+    "required_ids": []
+  },
+  "recall": {
+    "budget": 3,
+    "target_role": "investigator"
+  },
+  "items": [
+    {"id": "pin-window", "text": "迁移必须在维护窗口 02:00-04:00 内完成，此约束任何情况下不可移出交接上下文。", "source": "runbook", "created_at": 1, "pinned": true, "tags": []},
+    {"id": "db-password", "text": "主库只读密码在迁移期间临时改为 migration-2026，迁移完成后立即轮换。", "source": "runbook", "created_at": 2, "pinned": false, "tags": []},
+    {"id": "rollback-plan", "text": "回滚方案：如果迁移在 03:00 前未完成校验，立即执行 pg_restore 回滚到快照 snap-0817。", "source": "runbook", "created_at": 3, "pinned": false, "tags": []},
+    {"id": "index-bloat", "text": "索引膨胀检查：orders 表 pg_repack 需要 40 分钟，必须安排在迁移后而不是迁移前。", "source": "checklist", "created_at": 4, "pinned": false, "tags": []},
+    {"id": "replica-lag", "text": "从库复制延迟超过 30 秒时禁止切换流量，先执行 pg_rewind 再检查 wal_receiver。", "source": "checklist", "created_at": 5, "pinned": false, "tags": []},
+    {"id": "charset-mismatch", "text": "字符集陷阱：旧库是 latin1，新库是 utf8mb4，迁移脚本必须带 --convert-charmap，否则中文备注会变问号。", "source": "pitfall", "created_at": 6, "pinned": false, "tags": []},
+    {"id": "disk-quota", "text": "磁盘水位：新集群剩余空间 1.2TB，orders 表全量约 900GB，临时表空间另需 300GB，余量不足一倍。", "source": "metrics", "created_at": 7, "pinned": false, "tags": []},
+    {"id": "api-token", "text": "运维 API 的 token 放在 vault 路径 secret/migr/node1，健康检查脚本要用它拉取节点状态。", "source": "ops", "created_at": 8, "pinned": false, "tags": []},
+    {"id": "meeting-notes", "text": "上周例会纪要：讨论了食堂装修、季度团建选址和运动会报名，与本次迁移无关。", "source": "chatter", "created_at": 9, "pinned": false, "tags": []}
+  ],
+  "questions": [
+    {"id": 1, "题面": "迁移期间主库的临时密码是什么？", "锚词": "只读密码", "期望含": "migration-2026", "答案条": "db-password"},
+    {"id": 2, "题面": "若 03:00 前未完成校验，第一步回滚动作是什么？", "锚词": "03:00", "期望含": "pg_restore", "答案条": "rollback-plan"},
+    {"id": 3, "题面": "旧库 latin1 新库 utf8mb4，迁移脚本必须带哪个转换参数？", "锚词": "utf8mb4", "期望含": "convert-charmap", "答案条": "charset-mismatch"},
+    {"id": 4, "题面": "从库复制延迟超过多少秒时禁止切换流量？", "锚词": "复制延迟", "期望含": "30 秒", "答案条": "replica-lag"},
+    {"id": 5, "题面": "orders 表索引重建为什么必须安排在迁移后？", "锚词": "pg_repack", "期望含": "40 分钟", "答案条": "index-bloat"}
+  ],
+  "executor_rule": {
+    "find": "在交付上下文（compact 后 active 全体）中找 text 含锚词的条目；多于一条取 id 字典序最小",
+    "answer": "该条 text 中含锚词的最短「。」分隔句；找不到则作答固定串「（交接上下文中无法作答）」"
+  },
+  "trigger_rule": "未过题的题面原文按题号升序用「；」拼接；全过则不调 recall（落格丙报人）",
+  "validator_isolation": {
+    "freeze": 2,
+    "why": "本机 unshare -n 实测 EPERM（沙箱内外各一次），冻结#1 据此作废重开；见 EVENTS.md 事件 4-5",
+    "断网方式": "先试 unshare -n 自包裹；EPERM 时武装进程内 socket 拒绝（controlled_validator.py:75-79 同款），武装后自检（真调 socket.socket 一次，不抛才继续），自检不过 ⟹ 拒判 fail-closed；输出「断网方式」字段照实记"
+  },
+  "projection": {
+    "selected": ["pin-window", "rollback-plan", "replica-lag", "index-bloat"],
+    "evicted_ranked": ["api-token", "charset-mismatch", "db-password", "meeting-notes", "disk-quota"],
+    "failed_questions": [1, 3],
+    "trigger": "迁移期间主库的临时密码是什么？；旧库 latin1 新库 utf8mb4，迁移脚本必须带哪个转换参数？",
+    "recalled": ["charset-mismatch", "db-password", "disk-quota"],
+    "来源": "l1run/preanalysis.py：score_items 词面计算＋engine.py:146-188 规则手推，冻结前零引擎调用"
+  }
+}
