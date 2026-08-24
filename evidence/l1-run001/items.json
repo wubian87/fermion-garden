@@ -1,0 +1,98 @@
+{
+  "items": [
+    {
+      "id": "pin-window",
+      "text": "迁移必须在维护窗口 02:00-04:00 内完成，此约束任何情况下不可移出交接上下文。",
+      "source": "runbook",
+      "created_at": 1,
+      "pinned": true,
+      "tags": [],
+      "sha256_recomputed": "d7297f2a72303bf5397e07e5bbf3e0404feaf48fb89f752336a67c5b8a1a0ee8",
+      "与账一致": true
+    },
+    {
+      "id": "db-password",
+      "text": "主库只读密码在迁移期间临时改为 migration-2026，迁移完成后立即轮换。",
+      "source": "runbook",
+      "created_at": 2,
+      "pinned": false,
+      "tags": [],
+      "sha256_recomputed": "1fee85136f70a5a4cd872ae308b5dc373b90302c6dc1eddba5920f745f837f81",
+      "与账一致": true
+    },
+    {
+      "id": "rollback-plan",
+      "text": "回滚方案：如果迁移在 03:00 前未完成校验，立即执行 pg_restore 回滚到快照 snap-0817。",
+      "source": "runbook",
+      "created_at": 3,
+      "pinned": false,
+      "tags": [],
+      "sha256_recomputed": "7996f1cb7c15dd32f4bb3c63debec377b7df35b72e1e6e1a439e4f818e105f61",
+      "与账一致": true
+    },
+    {
+      "id": "index-bloat",
+      "text": "索引膨胀检查：orders 表 pg_repack 需要 40 分钟，必须安排在迁移后而不是迁移前。",
+      "source": "checklist",
+      "created_at": 4,
+      "pinned": false,
+      "tags": [],
+      "sha256_recomputed": "351bf911b6a4f6a20a0aad7e753057c432602e4c37136dfebde2cc7548a7c5e6",
+      "与账一致": true
+    },
+    {
+      "id": "replica-lag",
+      "text": "从库复制延迟超过 30 秒时禁止切换流量，先执行 pg_rewind 再检查 wal_receiver。",
+      "source": "checklist",
+      "created_at": 5,
+      "pinned": false,
+      "tags": [],
+      "sha256_recomputed": "8f2c7e290e65e32b7543e7ce99e602f594a57c5e876a5839e43fef1425cdc448",
+      "与账一致": true
+    },
+    {
+      "id": "charset-mismatch",
+      "text": "字符集陷阱：旧库是 latin1，新库是 utf8mb4，迁移脚本必须带 --convert-charmap，否则中文备注会变问号。",
+      "source": "pitfall",
+      "created_at": 6,
+      "pinned": false,
+      "tags": [],
+      "sha256_recomputed": "422df2b14593e77b9538c029b5e1d6634f736454f9a7a781378e889d59c39149",
+      "与账一致": true
+    },
+    {
+      "id": "disk-quota",
+      "text": "磁盘水位：新集群剩余空间 1.2TB，orders 表全量约 900GB，临时表空间另需 300GB，余量不足一倍。",
+      "source": "metrics",
+      "created_at": 7,
+      "pinned": false,
+      "tags": [],
+      "sha256_recomputed": "bdc97f819b810415e461d80d81ee7040d2d944ff5fcf5dd3d412624d5ac58d6a",
+      "与账一致": true
+    },
+    {
+      "id": "api-token",
+      "text": "运维 API 的 token 放在 vault 路径 secret/migr/node1，健康检查脚本要用它拉取节点状态。",
+      "source": "ops",
+      "created_at": 8,
+      "pinned": false,
+      "tags": [],
+      "sha256_recomputed": "f915ccb95f066e154e942328b8cd23b77a244c374331d2edf063f3f6a7893b5c",
+      "与账一致": true
+    },
+    {
+      "id": "meeting-notes",
+      "text": "上周例会纪要：讨论了食堂装修、季度团建选址和运动会报名，与本次迁移无关。",
+      "source": "chatter",
+      "created_at": 9,
+      "pinned": false,
+      "tags": [],
+      "sha256_recomputed": "4edb114a60ac2b918e34253f97a50f8c3c88daf633e65d19fb23361ccf040ca6",
+      "与账一致": true
+    }
+  ],
+  "对账": {
+    "条数": 9,
+    "全部与账一致": true
+  }
+}

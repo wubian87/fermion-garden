@@ -1,0 +1,15 @@
+{
+  "退出码": 1,
+  "判定": {
+    "合法": false,
+    "过题数": 0,
+    "题数": 0,
+    "每题": {},
+    "未过": [],
+    "判卷遍数": 0,
+    "确定性": null,
+    "断网方式": "unshare-eparm→in-process-socket-denial",
+    "拒绝原因": "判卷链失败: TypeError: string indices must be integers, not 'str'"
+  },
+  "stderr尾": ""
+}

@@ -1,0 +1,53 @@
+{
+  "判卷人指认": {
+    "擦除步trace_id": "999ff86cd8d248aa95ed8c7b9c2ea6a4",
+    "被擦集": [
+      "api-token",
+      "charset-mismatch",
+      "db-password",
+      "meeting-notes",
+      "disk-quota"
+    ],
+    "召回步trace_id": "8eadd3aaeb1248e39163d83ef3919901",
+    "被召回集": [
+      "charset-mismatch",
+      "db-password",
+      "disk-quota"
+    ],
+    "理由引用的具体数值样本": [
+      "8.512081",
+      "5.343240",
+      "24.212118",
+      "19.952400",
+      "4.635676",
+      "seq 13",
+      "seq 19",
+      "预算 4＝强制 1 条",
+      "分数>0 的前 3 名"
+    ]
+  },
+  "实际": {
+    "擦除步trace_id": "999ff86cd8d248aa95ed8c7b9c2ea6a4",
+    "被擦集": [
+      "api-token",
+      "charset-mismatch",
+      "db-password",
+      "disk-quota",
+      "meeting-notes"
+    ],
+    "召回步trace_id": "8eadd3aaeb1248e39163d83ef3919901",
+    "被召回集": [
+      "charset-mismatch",
+      "db-password",
+      "disk-quota"
+    ]
+  },
+  "比对": {
+    "擦除步trace_id对": true,
+    "被擦集对": true,
+    "召回步trace_id对": true,
+    "被召回集对": true,
+    "理由超模板": true,
+    "甲4过": true
+  }
+}
