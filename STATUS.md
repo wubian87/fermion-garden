@@ -1,12 +1,18 @@
 # Status
 
-证据数据截点：2026-08-17，第 118–122 轮均已正式落格并精选入库（118 打平、119 预检闸毙注、120 打平、121 分出、122 分出·边界）。第 122 轮为首个冻结时序外部化轮次：冻结表先于跑数推送（commit ee029ab），结果侧导出含脱敏逐棒账，见 `docs/preregistration.md`。产品接口截点：2026-08-24，L14.1 单进程身份归因与 handoff 审计已经落码；这不改变前述实验结论。初赛提交时点为 37 个跟踪文件，此后提交均为维护与证据补全。
+**证据数据截点：2026-08-25。**第 118–123 轮均已正式落格并精选入库（118 打平、119 预检闸毙注、120 打平、121 分出、122 分出·边界、123 M4 零机会打平＋σ31 S2）；此后 L15／L16 真实任务对照（各 n=1）、L17／L18 `pin_latest` 与重放等价、S0 店铺客服班三臂同流依次入库。第 122 轮为首个冻结时序外部化轮次：冻结表先于跑数推送（commit ee029ab），结果侧导出含脱敏逐棒账，见 `docs/preregistration.md`。
+
+**产品接口截点：2026-08-25（L18）。**引擎侧已落码到 `select / compact / recall / scan` 四操作 ＋ `pin_latest` ＋ `save / load_from` ＋ 规则身份与逐 token 打分留痕 ＋ 单进程身份归因与 handoff 审计。这些都不改变前述实验结论——**接口做完不等于收益被证明**，「尚未证明」那几行照旧立着。
+
+初赛提交时点为 37 个跟踪文件，此后提交均为维护与证据补全。
 
 | 能力 | 状态 | 可核位置 |
 |---|---|---|
-| `select / compact / recall` 稳定接口 | 已实现，v0.1 词面基线 | `src/fermion_garden/engine.py` |
+| `select / compact / recall / scan` 稳定接口 | 已实现，v0.1 词面基线（`scan`＝全池排名，只读、零状态改动，账上仍留一行 `operation="scan"`） | `src/fermion_garden/engine.py`、`tests/test_scan_l125.py` |
 | 可逆移出与召回 | 已实现 | `tests/test_engine.py` |
 | 判词、版本、`trace_id` 审计 | 已实现 | `src/fermion_garden/ledger.py` |
+| **打分可被第三方独立复算** | 已实现：账行带 `rule_ref`（判据身份含版本，如 `bm25-lexical@2`）与 `score_trace`（query、`n_docs`、`avg_len`、`doc_len`、逐 token 的 `tf/df/idf/denominator/contribution`、`unrounded_sum`、`rounded`）⟹ 拿账行就能把分自己算一遍，不用相信引擎 | `src/fermion_garden/ledger.py`、`src/fermion_garden/lexical.py` |
+| **落盘与回读（`save` / `load_from`）** | 已实现（L10.1）：原子写（同目录临时文件 → `fsync` → `os.replace`），带 `format_version`；**版本不匹配一律抛 `ValueError` 拒读，⛔ 不静默降级、⛔ 不尽力而为地读**。⚠️ 掉电级的目录项 `fsync` 未做 | `src/fermion_garden/engine.py`（`save`／`load_from`／`_format_version`） |
 | 零网络演示 | 已实现 | `examples/offline_demo.py` |
 | 9 位参与者身份与账行 `agent_ref` | 已实现，单进程 | `src/fermion_garden/agents.py`、`tests/test_engine.py` |
 | dump/load handoff 两端审计 | 已实现；接手方须自行设置 `acting_agent` | `examples/handoff_demo.py`、`l141run/报告.md` |

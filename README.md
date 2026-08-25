@@ -8,7 +8,9 @@
 
 评委或 AI 请先读：`README.md` → `STATUS.md` → `EVIDENCE.md` → `examples/offline_demo.py`。不要把本仓库读成已完成的多 Agent 产品。
 
-多 Agent 共用的上下文会持续增长。费米子乐园把“下一位 Agent 这一步该读什么”做成三个显式操作：`select` 选择、`compact` 可逆移出、`recall` 按新证据召回。每次决定都留下理由、版本与 `trace_id`。
+多 Agent 共用的上下文会持续增长。费米子乐园把“下一位 Agent 这一步该读什么”做成四个显式操作：`select` 选择、`compact` 可逆移出、`recall` 按新证据召回、`scan` 全池排名（只读，零状态改动）。每次决定都留下理由、版本与 `trace_id`。
+
+**账不是「记了一行」，是可以逐 token 复算的。**每条打过分的账行带 `rule_ref`（用的哪条判据，如 `bm25-lexical@2`）与 `score_trace`——里面是这次打分的 query、`n_docs`、`avg_len`、`doc_len`，以及逐个 token 的 `tf / df / idf / denominator / contribution`，最后是 `unrounded_sum` 与 `rounded`。**第三方拿账行就能把分自己算一遍，不用相信引擎。**
 
 L14.1 还加入了单进程的 `AgentRegistry`：给参与者发 9 位号，让账行带 `agent_ref`，并在 `dump(to_agent=...)` 中记录一次 handoff 的两端。它是可审计的身份归因，不是权限系统、消息总线或 Agent 调度器；接手方 `load` 后必须自己设置 `acting_agent`，旧钥匙不会替它冒充身份。
 
@@ -16,7 +18,15 @@ L14.1 还加入了单进程的 `AgentRegistry`：给参与者发 9 位号，让�
 
 这是从私人实验母库白名单提取的初赛代码候选，不是完成品。
 
-- **已实现**：零网络词面基线；`select / compact / recall` 与 `pin_latest` 工程态保护（版本化材料的最新态钉在活动区，`protect` 账行）；可恢复账本；单进程参与者身份、账行归因与 handoff 审计；两个离线演示；单元测试；第 120–122 轮机械证据快照与 L15–L16 真实任务对照证据。
+- **已实现**：
+  - 零网络词面基线，`select / compact / recall / scan` 四个显式操作；
+  - `pin_latest` 工程态保护（版本化材料的最新态钉在活动区，`protect` 账行）；
+  - 可恢复账本：移出项进可恢复区，不做永久删除；
+  - **可复算的归因**：账行带 `rule_ref`（判据身份，含版本）与 `score_trace`（逐 token 的 tf/df/idf/贡献），第三方可独立重算每一个分；
+  - **落盘与回读**：`save` 原子写整份上下文（同目录临时文件 ＋ `os.replace`），`load_from` 带 `format_version` 闸——**版本不匹配一律拒读，⛔ 不静默降级**；
+  - 单进程参与者身份（9 位号）、账行 `agent_ref` 归因与 `dump/load` 两端 handoff 审计；
+  - 两个离线演示、单元测试（68 个）；
+  - 第 118–123 轮机械证据快照，L15/L16 真实任务对照与 L17/L18 重放等价，S0 店铺客服班三臂同流。
 - **尚未实现**：AgentTeams 适配器、消息总线、分布式 Trace、真实的 `investigator / fixer / verifier` 三 Agent 运行闭环、嵌入 provider、生产沙箱。
   ⚠️ 一处必须说准：[`evidence/s0-shop-shift/`](evidence/s0-shop-shift/) 里确有一次**三角色**（分诊／办理／审核）的真实调用运行，
   但它跑在一次性实验脚本里，**⛔ 不是本仓引擎的产品接口，⛔ 也不是 AgentTeams 闭环**。
@@ -71,6 +81,33 @@ recalled = garden.recall("validation says timezone boundary returns wrong value"
 ```
 
 `budget` 在 v0.1 中表示最多条目数，不假装是精确 token 预算。所有被移出项进入可恢复区，不做永久删除。
+
+只读的全池排名（`scan`），以及落盘／回读：
+
+```python
+bundle = garden.scan("timezone", target_role="auditor")
+# 池 = 在位 ∪ 可恢复，全部条目按名次进 bundle.decisions；⛔ 零状态改动，但账上留一行 operation="scan"
+
+garden.save("ctx.json")            # 原子写：同目录临时文件 → fsync → os.replace
+restored = CtxKey.load_from("ctx.json")   # format_version 不匹配 ⟹ 抛 ValueError，⛔ 不静默降级
+```
+
+每条打过分的账行都能自己复算——`rule_ref` 说用的哪条判据（带版本），`score_trace` 给出逐 token 的推导：
+
+```python
+event = next(e for e in garden.ledger.events if e.operation == "select")
+event.rule_ref                       # 'bm25-lexical@1'
+event.score_trace["score"]
+# {'query': 'target_role=fixer; task=repair the timezone boundary',
+#  'n_docs': 2, 'avg_len': 3.5, 'doc_len': 4,
+#  'terms': [{'token': 'timezone', 'tf': 1, 'df': 1, 'idf': 0.6931471805599453,
+#             'denominator': 2.6607142857142856, 'contribution': 0.6512792300563245}, …],
+#  'unrounded_sum': 1.302558460112649, 'rounded': 1.30255846}
+```
+
+`terms` 为空列表是有意义的读数，不是缺账：**它说这条条目一个 query token 都没命中，分数来源为零。**
+判据分层时 `rule_ref` 也照分——`recall` 的账行写的是 `bm25-lexical@1+d3-self-ratio@1`：
+打分器身份盖不住比值与门槛，两层各自留名。
 
 最小身份交接：
 

@@ -2,7 +2,7 @@
 
 1. 当前评分器是零网络词面基线；它不理解语义，也没有在企业数据上验证。
 2. `budget` 表示条目数，不是 tokenizer 精确计算的 token 数。
-3. `DecisionLedger` 当前只在单进程内存中追加；`agent_ref` 能区分登记过的参与者，但尚未实现并发持久化或分布式 Trace。
+3. `DecisionLedger` 当前只在单进程内存中追加。`CtxKey.save` / `load_from` 提供的是**整份上下文的快照落盘与回读**（原子写＋`format_version` 拒读闸），**不是**并发安全的追加式账存储，也**不是**分布式 Trace：多个进程同时 `save` 到同一路径是后写覆盖先写，账不会自动合并。`agent_ref` 能区分登记过的参与者，但跨进程的 Trace 串联仍未实现。
 4. `AgentRegistry` 的 9 位号是稳定引用，不是身份认证、角色、权限或防冒充机制。
 5. `dump(to_agent=...)` 的 handoff 只是随 ctx-key 走的审计块；本仓库没有消息总线、AgentTeams 适配器，也没有真实运行的三个职能 Agent。`examples/handoff_demo.py` 是单进程离线消费者，不是多 Agent 闭环。
 6. 第 120 轮没有证明动态选读优于最近历史或全量／压缩历史；正式判词为打平。L14.1 的身份归因与 handoff 示例也没有新增任务成功率证据。
