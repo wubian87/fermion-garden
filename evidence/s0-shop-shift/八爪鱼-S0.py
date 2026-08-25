@@ -14,14 +14,47 @@
     引擎 mandatory=必带∪pinned，交错班里钉着的可能是别家档案，len(必带) 装不下。
     意图不变：并列时管家只交必带件、零可选位。记忆条目文本＝料侧预生成的标记行，页内自带会话标。
     （DRY 闸 2026-08-25 首跑即咬住差异③④，零发数。）
-用法：set -a; source ~/AI项目/syz/.env; set +a; python3 八爪鱼-S0.py
+用法：set -a; source <你自己的 .env>; set +a; python3 八爪鱼-S0.py
       JDDC239_DRY=1 零调用走全链；JDDC239_SMOKE=1 首点全链即停。
+      FERMION_GARDEN_SRC=<本仓 src 的绝对路径>（不设则按本文件位置回推本仓 src）。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ 跑后补丁（2026-08-26，两处，逐条列明；2026-08-25 那次真跑用的是补丁前的版本）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+补丁 A（行为变了）：审核结果的解析从 **fail open 改成 fail closed**。
+
+  补丁前（＝ 2026-08-25 真跑时跑的那几行，逐字）：
+      审o = 抽JSON(审核出["回复"])
+      if 审o is None:
+          放行, 问题 = True, []
+          审核态 = "解析失败·按放行落账"
+      else:
+          放行 = bool(审o.get("放行", True)); 问题 = list(审o.get("问题") or [])
+          审核态 = "放行" if 放行 else "退回"
+
+  两个洞：① 审核回复解析不出 JSON 时**直接放行**；② `bool()` 会把字符串 "false"
+  这类非布尔值判成真 —— 两者都跟「审核员查账不放行问题件」这句叙述相冲突。
+
+  这一处**没有影响 2026-08-25 那次跑的读数**，而这句话是从账上数出来的、不是推的：
+      八爪鱼账S0.jsonl 里 52 个有「审核态」的点 ⟹ 放行 51 ／ 退回 1 ／ **解析失败 0**。
+      （原始账未随本仓上传，见本目录 README「⛔ 原始跑数不入本仓」；上面这两个数
+        可由 README 与 并排-S0.md 的「审核退回重写 1 次」逐点对上。）
+  ⟹ 补丁前后在这条班上的输出**逐字相同**；补丁改的是「下一次遇到没遇到过的输入时怎么倒」。
+
+补丁 B（行为没变）：第 24 行原先硬编码了作者本机的引擎 src 路径，改成
+  环境变量 FERMION_GARDEN_SRC → 本文件位置回推 → 报错退出。纯路径解析，不碰跑法。
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 """
 import json, os, re, subprocess, sys, time, hashlib
 from pathlib import Path
 
 注地 = Path(__file__).resolve().parent
-sys.path.insert(0, "/home/xin/AI项目/github/fermion-garden-clean/src")
+# 引擎 src 的位置：环境变量优先，其次按本文件在本仓中的位置回推（evidence/s0-shop-shift/ → 仓根/src）
+_src = os.environ.get("FERMION_GARDEN_SRC") or str(注地.parent.parent / "src")
+if not (Path(_src) / "fermion_garden" / "engine.py").is_file():
+    sys.exit(f"找不到引擎 src：{_src}\n"
+             f"请设 FERMION_GARDEN_SRC=<fermion-garden checkout>/src 后重跑。")
+sys.path.insert(0, _src)
 from fermion_garden.engine import CtxKey          # noqa: E402
 from fermion_garden.models import ContextItem     # noqa: E402
 
@@ -237,11 +270,21 @@ def 主循环():
         vb, 事实页 = 选页(f"审核草稿（消息：{消息}）", "审核", 审核预算, 必带审)
         审核出 = 调工人("审核", 审核提示.format(店规=店规, 消息=消息, 事实页=事实页, 草稿=草稿))
         审o = 抽JSON(审核出["回复"])
-        if 审o is None:
-            放行, 问题 = True, []
-            审核态 = "解析失败·按放行落账"
+        # ⚠️ fail closed（2026-08-26 补丁 A，见文件头注）：审核结果读不干净就**不许放行**。
+        #    只有「解析出 dict，且『放行』字段确实是布尔 True」这一条路才放行；
+        #    解析失败／字段缺失／字段不是布尔（含字符串 "false"）一律退回并标人工复核。
+        需人工 = False
+        if not isinstance(审o, dict):
+            放行, 问题 = False, ["审核回复无法解析为 JSON —— fail closed，按退回处理，需人工复核"]
+            审核态 = "解析失败·按退回落账"
+            需人工 = True
+        elif not isinstance(审o.get("放行"), bool):
+            放行, 问题 = False, [f"审核回复的「放行」字段不是布尔值（收到 {审o.get('放行')!r}）"
+                                 " —— fail closed，按退回处理，需人工复核"]
+            审核态 = "放行字段非布尔·按退回落账"
+            需人工 = True
         else:
-            放行 = bool(审o.get("放行", True)); 问题 = list(审o.get("问题") or [])
+            放行 = 审o["放行"]; 问题 = list(审o.get("问题") or [])
             审核态 = "放行" if 放行 else "退回"
 
         终稿, 终态 = 草稿, "首稿放行" if 放行 else "首稿"
@@ -262,6 +305,7 @@ def 主循环():
               "窗口": list(窗口), "上我方": list(上我方),
               "办理页": list(gb.selected_ids), "事实页": list(vb.selected_ids),
               "草稿": 草稿, "终稿": 终稿, "终态": 终态, "审核态": 审核态, "审核问题": 问题,
+              "需人工复核": 需人工,
               "办理": {"usage": 办理出.get("usage"), "墙钟秒": 办理出.get("墙钟秒")},
               "审核": {"回复": 审核出["回复"], "usage": 审核出.get("usage"), "墙钟秒": 审核出.get("墙钟秒")}}
         if 分诊账: 行 |= 分诊账

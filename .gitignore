@@ -10,3 +10,8 @@ dist/
 *.run.lock
 *.log
 run.jsonl
+
+# evidence/s0-shop-shift/ 重跑产物（由 造料-S0.py / 八爪鱼-S0.py 现场生成，不入仓）
+evidence/s0-shop-shift/回复料-S0.json
+evidence/s0-shop-shift/八爪鱼账S0.jsonl
+evidence/s0-shop-shift/八爪鱼钥匙S0/

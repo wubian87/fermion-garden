@@ -1,0 +1,23 @@
+{
+ "源session_sha256": "06ea6163fcf9c6ffc0c90a78e2051701ee6b9e9a3fa7cb02c2ae93ad6466f2fb",
+ "源session_文件名": "session.jsonl.zstd",
+ "事件数": 7653,
+ "喂入客户消息数": 322,
+ "assistant_turn数": 322,
+ "compaction事件数": 0,
+ "首turn": {
+  "inputTokens": 75,
+  "cacheReadTokens": 512,
+  "请求量_in加cacheRead": 587
+ },
+ "末turn": {
+  "inputTokens": 83,
+  "cacheReadTokens": 70784,
+  "请求量_in加cacheRead": 70867
+ },
+ "cacheRead末态": 70784,
+ "cacheRead是否单调不降": true,
+ "inputTokens最大": 474,
+ "总请求量_in加cacheRead": 12082690,
+ "口径": "inputTokens 只记缓存未命中部分；单 turn 真实请求量＝inputTokens+cacheReadTokens。只看 inputTokens 会把这一臂读小两个数量级以上。"
+}

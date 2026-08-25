@@ -18,6 +18,10 @@ L14.1 还加入了单进程的 `AgentRegistry`：给参与者发 9 位号，让�
 
 - **已实现**：零网络词面基线；`select / compact / recall` 与 `pin_latest` 工程态保护（版本化材料的最新态钉在活动区，`protect` 账行）；可恢复账本；单进程参与者身份、账行归因与 handoff 审计；两个离线演示；单元测试；第 120–122 轮机械证据快照与 L15–L16 真实任务对照证据。
 - **尚未实现**：AgentTeams 适配器、消息总线、分布式 Trace、真实的 `investigator / fixer / verifier` 三 Agent 运行闭环、嵌入 provider、生产沙箱。
+  ⚠️ 一处必须说准：[`evidence/s0-shop-shift/`](evidence/s0-shop-shift/) 里确有一次**三角色**（分诊／办理／审核）的真实调用运行，
+  但它跑在一次性实验脚本里，**⛔ 不是本仓引擎的产品接口，⛔ 也不是 AgentTeams 闭环**。
+  那次运行验的是**受控客服班上三角色之间的上下文交接结构**，⛔ 不是「AI 自动运营店铺」——
+  定价、库存、履约、支付一概不碰。
 - **尚未证明**：上下文选择能提升任务成功率。第 120 轮正式结果是三种读法打平，选择臂的重复踩坑反而更多。第 121 轮在同一题上分出：死路记录写成禁令比写成中性描述重踩更少（R 0.55 对 0.65；Z 双 0.90 打平）——量的是记录写法的效应，不是任务成功率。第 122 轮三臂（判线／预告／禁令）再分出·边界：禁令式重踩最少（R 中位 0.35 对 0.55／0.60，M3·命令式不可替）——仍是记录写法的效应，不是任务成功率。
 
 这个边界是仓库契约的一部分。请同时阅读 [STATUS.md](STATUS.md)、[EVIDENCE.md](EVIDENCE.md) 与 [docs/limitations.md](docs/limitations.md)。
@@ -96,6 +100,12 @@ evidence/round119/        第 119 轮冻结判词：预检闸毙注（题面泄�
 evidence/round120/        精选机械验证器、自造题、冻结判词与正式负结果（三臂打平）
 evidence/round121/        第 121 轮冻结判词与分出结果（禁令式渲染）
 evidence/round122/        第 122 轮冻结判词、分出·边界结果与脱敏逐棒账（首个预注册外部化轮次）
+evidence/round123/        第 123 轮冻结判词与结果（σ 厚度 × 判定时刻拆开）
+evidence/l15-game-duel/   L15 同题双臂真实任务对照（n=1，只报不判）
+evidence/l16-game-duel2/  L16 工程态保护三臂对照（n=1，H16 方向性成立）
+evidence/l17-pin-latest/  L17/L18 pin_latest 工程态保护与重放等价 12/12
+evidence/s0-shop-shift/   S0 店铺客服班：52 点手写虚构流，三臂同流逐字并排（⛔ 复现边界见其 README）
+evidence/jddc-185-context-growth/  322 条真实客服流上默认压缩零触发的逐 turn token 账（⛔ 只发数不发料）
 evidence/early-experiments/  早期可恢复驱逐佐证（脱敏摘录）
 docs/                     方法、限制、公开边界与来源说明
 ```
