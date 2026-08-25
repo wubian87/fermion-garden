@@ -41,7 +41,10 @@
         可由 README 与 并排-S0.md 的「审核退回重写 1 次」逐点对上。）
   ⟹ 补丁前后在这条班上的输出**逐字相同**；补丁改的是「下一次遇到没遇到过的输入时怎么倒」。
 
-补丁 B（行为没变）：第 24 行原先硬编码了作者本机的引擎 src 路径，改成
+  这道闸连同 抽JSON 一起**析出到同目录的 `审核闸.py`**，由 `tests/test_s0_audit_gate.py` 直接验
+  —— ⭐ 为的是「这个修好没有」可以被机器答，⛔ 不用读代码相信它。逻辑与本处逐字同。
+
+补丁 B（行为没变）：原先硬编码了作者本机的引擎 src 路径，改成
   环境变量 FERMION_GARDEN_SRC → 本文件位置回推 → 报错退出。纯路径解析，不碰跑法。
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 """
@@ -57,6 +60,7 @@ if not (Path(_src) / "fermion_garden" / "engine.py").is_file():
 sys.path.insert(0, _src)
 from fermion_garden.engine import CtxKey          # noqa: E402
 from fermion_garden.models import ContextItem     # noqa: E402
+from 审核闸 import 抽JSON, 判审核                    # noqa: E402  同目录，见其模块头注
 
 料 = json.loads((注地 / "回复料-S0.json").read_text(encoding="utf-8"))
 流, 点表 = 料["流"], 料["回复点"]
@@ -127,12 +131,6 @@ def 调工人(角色, 提示):
             return obj
     raise RuntimeError(f"{角色}工人三试无回复：{(r.stderr or '')[-400:]}")
 
-def 抽JSON(文: str) -> dict | None:
-    文 = re.sub(r"```(?:json)?", "", 文 or "").strip()
-    m = re.search(r"\{[^{}]*\}", 文, re.S)
-    if not m: return None
-    try: return json.loads(m.group(0))
-    except json.JSONDecodeError: return None
 
 def 交接头(d):
     b = json.dumps(d, ensure_ascii=False, sort_keys=True).encode()
@@ -269,23 +267,9 @@ def 主循环():
         钥匙.acting_agent = 号["审核"]
         vb, 事实页 = 选页(f"审核草稿（消息：{消息}）", "审核", 审核预算, 必带审)
         审核出 = 调工人("审核", 审核提示.format(店规=店规, 消息=消息, 事实页=事实页, 草稿=草稿))
-        审o = 抽JSON(审核出["回复"])
-        # ⚠️ fail closed（2026-08-26 补丁 A，见文件头注）：审核结果读不干净就**不许放行**。
-        #    只有「解析出 dict，且『放行』字段确实是布尔 True」这一条路才放行；
-        #    解析失败／字段缺失／字段不是布尔（含字符串 "false"）一律退回并标人工复核。
-        需人工 = False
-        if not isinstance(审o, dict):
-            放行, 问题 = False, ["审核回复无法解析为 JSON —— fail closed，按退回处理，需人工复核"]
-            审核态 = "解析失败·按退回落账"
-            需人工 = True
-        elif not isinstance(审o.get("放行"), bool):
-            放行, 问题 = False, [f"审核回复的「放行」字段不是布尔值（收到 {审o.get('放行')!r}）"
-                                 " —— fail closed，按退回处理，需人工复核"]
-            审核态 = "放行字段非布尔·按退回落账"
-            需人工 = True
-        else:
-            放行 = 审o["放行"]; 问题 = list(审o.get("问题") or [])
-            审核态 = "放行" if 放行 else "退回"
+        # fail closed（2026-08-26 补丁 A，见文件头注）：审核结果读不干净就**不许放行**。
+        # 这道闸析出在 审核闸.py，由 tests/test_s0_audit_gate.py 直接验。
+        放行, 问题, 审核态, 需人工 = 判审核(审核出["回复"])
 
         终稿, 终态 = 草稿, "首稿放行" if 放行 else "首稿"
         if not 放行:

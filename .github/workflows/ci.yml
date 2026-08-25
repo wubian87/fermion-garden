@@ -21,3 +21,39 @@ jobs:
       - run: cd evidence/round120 && sha256sum -c frozen-decision-table.sha256
       - run: cd evidence/round121 && sha256sum -c frozen-decision-table.sha256
       - run: cd evidence/round122 && sha256sum -c frozen-decision-table.sha256
+
+      # ── S0 店铺客服班：把 README 里那几句可核的话交给机器核 ──────────────
+      # ⛔ 以下三步全部零模型调用、零网络：验的是「冻结的还在冻着」「造料是确定性的」
+      #    「④ 臂装置还跑得起来」，⛔ 不产生任何新读数。
+      - name: S0 冻结料与预注册的 sha 还对得上
+        run: cd evidence/s0-shop-shift && sha256sum -c 料-小说班-S0.json.sha256 预测-S0.md.sha256
+
+      - name: S0 造料是确定性的（产物须逐字节复现）
+        run: |
+          cd evidence/s0-shop-shift
+          sha256sum 设定-S0.txt 店规-S0.txt > /tmp/s0-产物-跑前.sha256
+          python3 造料-S0.py
+          sha256sum -c /tmp/s0-产物-跑前.sha256
+          git diff --exit-code -- 设定-S0.txt 店规-S0.txt
+          python3 - <<'PY'
+          import json, pathlib
+          料 = json.loads(pathlib.Path("回复料-S0.json").read_text(encoding="utf-8"))
+          统 = 料["统计"]
+          assert 统["点数"] == 52 and 统["客户数"] == 8 and 统["判定点数"] == 14, 统
+          assert 统["手写料sha256"].startswith("78f4d96a"), 统["手写料sha256"]
+          assert 料["料sha256"].startswith("915d182c"), 料["料sha256"]
+          print("S0 造料统计与 sha 逐条对上：", 统["点数"], "点 /", 统["客户数"], "客户")
+          PY
+
+      - name: S0 ④臂装置零调用走全链（DRY，不打任何模型）
+        run: |
+          cd evidence/s0-shop-shift
+          JDDC239_DRY=1 python3 八爪鱼-S0.py | tail -3
+          python3 - <<'PY'
+          import json, pathlib, collections
+          行 = [json.loads(l) for l in pathlib.Path("八爪鱼账S0.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
+          点 = [d for d in 行 if "审核态" in d]
+          assert len(点) == 52, f"DRY 应走满 52 点，实得 {len(点)}"
+          assert all(d["需人工复核"] is False for d in 点), "DRY 罐头回复是合法布尔，不该触发人工闸"
+          print("④ 臂 DRY 全链 52 点，审核态分布：", collections.Counter(d["审核态"] for d in 点))
+          PY
